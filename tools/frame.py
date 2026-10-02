@@ -5,6 +5,14 @@ from PIL import Image, ImageDraw
 NAVY, AMBER, TEAL, WHITE = (15, 27, 45, 255), (245, 165, 36, 255), (20, 184, 166, 255), (255, 255, 255, 255)
 S = 500
 
+def is_brand_tile(logo):
+    """True when the logo is a square with an opaque, non-white background in every corner."""
+    w, h = logo.size
+    if abs(w - h) > max(w, h) * 0.05:
+        return False
+    corners = [logo.getpixel(p) for p in ((0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1))]
+    return all(a == 255 and min(r, g, b) < 235 for r, g, b, a in corners)
+
 def frame(logo_path, badge_path, out_path):
     canvas = Image.new("RGBA", (S, S), (0, 0, 0, 0))
     d = ImageDraw.Draw(canvas)
@@ -13,11 +21,19 @@ def frame(logo_path, badge_path, out_path):
     d.rounded_rectangle((30, 30, S - 31, S - 31), radius=70, fill=WHITE)
 
     logo = Image.open(logo_path).convert("RGBA")
-    bbox = logo.getbbox()
-    if bbox:
-        logo = logo.crop(bbox)
-    logo.thumbnail((280, 280), Image.LANCZOS)
-    canvas.alpha_composite(logo, ((S - logo.width) // 2, (S - logo.height) // 2))
+    if is_brand_tile(logo):
+        # Square logo with its own colored background (e.g. Substack, WTTJ): fill the whole panel with it
+        panel = S - 60
+        logo = logo.resize((panel, panel), Image.LANCZOS)
+        mask = Image.new("L", (panel, panel), 0)
+        ImageDraw.Draw(mask).rounded_rectangle((0, 0, panel - 1, panel - 1), radius=70, fill=255)
+        canvas.paste(logo, (30, 30), mask)
+    else:
+        bbox = logo.getbbox()
+        if bbox:
+            logo = logo.crop(bbox)
+        logo.thumbnail((280, 280), Image.LANCZOS)
+        canvas.alpha_composite(logo, ((S - logo.width) // 2, (S - logo.height) // 2))
 
     size = 112
     badge = Image.open(badge_path).convert("RGBA").resize((size, size), Image.LANCZOS)
