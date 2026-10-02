@@ -1,4 +1,4 @@
-"""DataMole icon frame: navy tile, amber line, white panel, source logo centered, DataMole badge sticker bottom-right."""
+"""DataMole icon frame: navy tile, amber line, white panel, source logo centered (badge may overlap its corner), DataMole badge sticker bottom-right."""
 import sys, os
 from PIL import Image, ImageDraw
 
@@ -16,8 +16,8 @@ def frame(logo_path, badge_path, out_path):
     bbox = logo.getbbox()
     if bbox:
         logo = logo.crop(bbox)
-    logo.thumbnail((250, 250), Image.LANCZOS)
-    canvas.alpha_composite(logo, (228 - logo.width // 2, 228 - logo.height // 2))
+    logo.thumbnail((280, 280), Image.LANCZOS)
+    canvas.alpha_composite(logo, ((S - logo.width) // 2, (S - logo.height) // 2))
 
     size = 112
     badge = Image.open(badge_path).convert("RGBA").resize((size, size), Image.LANCZOS)
