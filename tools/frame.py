@@ -32,7 +32,7 @@ def frame(logo_path, badge_path, out_path):
         bbox = logo.getbbox()
         if bbox:
             logo = logo.crop(bbox)
-        logo.thumbnail((280, 280), Image.LANCZOS)
+        logo.thumbnail((350, 350), Image.LANCZOS)
         canvas.alpha_composite(logo, ((S - logo.width) // 2, (S - logo.height) // 2))
 
     size = 112
